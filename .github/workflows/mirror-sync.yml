@@ -5,15 +5,29 @@ on:
   schedule:
     - cron: "*/10 * * * *"
 
+permissions:
+  contents: none  # disable github-actions[bot] completely
+
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source repo (no bot creds)
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          persist-creentials: false
+          persist-credentials: false
+
+      - name: Verify token exists
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          if [ -z "$MIRROR_TOKEN" ]; then
+            echo "MIRROR_TOKEN is missing"
+            exit 1
+          fi
+          echo "MIRROR_TOKEN present"
 
       - name: Push to mirror repo using PAT
         env:
